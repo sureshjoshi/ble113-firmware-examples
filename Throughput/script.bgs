@@ -1,0 +1,73 @@
+# This is a throughput test of a standalone BLE112 module
+
+# Buffer 
+dim sensor(20) 
+dim connected 
+dim bdaddr(6)
+# Boot event listener
+event system_boot(major ,minor ,patch ,build ,ll_version ,protocol_version ,hw)
+
+    connected = 0
+
+    # configure P0.7 as output (Pin 19 on JRowberg's BLE112 Breakout Board)
+    call hardware_io_port_config_direction(0, $80)
+
+    # Disable P0.7 pin (ie. turn off LED or similar)
+    call hardware_io_port_write(0, $80, 0)
+
+    # Start advertisment
+    call gap_set_mode(gap_general_discoverable, gap_undirected_connectable)
+    call sm_set_bondable_mode(1)
+
+    #Set timer to generate event every 20ms (32768/1000ms * 20ms) (needs to be roughly less than connection interval time)
+    call hardware_set_soft_timer(100, 1, 0)
+    
+    	#read the local devices public Bluetooth address
+	call system_address_get()(bdaddr(0:6))
+	
+	#create the device name buffer (ascii)
+	sensor(0:1)   = 83  # S 
+	sensor(1:1)   = 97  # a
+	sensor(2:1)   = 109 # m
+	sensor(3:1)   = 112 # p
+	sensor(4:1)   = 108 # l
+	sensor(5:1)   = 101 # e
+	sensor(6:1)   = 49  # 1
+	sensor(7:1)   = 45  # -
+	sensor(8:1)   = (bdaddr(5:1)/$10) + 48 + ((bdaddr(5:1)/$10)/10*7) 
+	sensor(9:1)   = (bdaddr(5:1)&$f)  + 48 + ((bdaddr(5:1)&$f )/10*7) 
+	sensor(10:1)  = (bdaddr(4:1)/$10) + 48 + ((bdaddr(4:1)/$10)/10*7) 
+	sensor(11:1)  = (bdaddr(4:1)&$f)  + 48 + ((bdaddr(4:1)&$f )/10*7) 
+	sensor(12:1)  = (bdaddr(3:1)/$10) + 48 + ((bdaddr(3:1)/$10)/10*7) 
+	sensor(13:1)  = (bdaddr(3:1)&$f)  + 48 + ((bdaddr(3:1)&$f )/10*7) 
+	sensor(14:1)  = (bdaddr(2:1)/$10) + 48 + ((bdaddr(2:1)/$10)/10*7) 
+	sensor(15:1)  = (bdaddr(2:1)&$f)  + 48 + ((bdaddr(2:1)&$f )/10*7) 
+	sensor(16:1)  = (bdaddr(1:1)/$10) + 48 + ((bdaddr(1:1)/$10)/10*7) 
+	sensor(17:1)  = (bdaddr(1:1)&$f)  + 48 + ((bdaddr(1:1)&$f )/10*7) 
+	sensor(18:1)  = (bdaddr(0:1)/$10) + 48 + ((bdaddr(0:1)/$10)/10*7) 
+	sensor(19:1)  = (bdaddr(0:1)&$f)  + 48 + ((bdaddr(0:1)&$f )/10*7)
+    
+end
+
+# Connection event listener
+event connection_status(connection, flags, address, address_type, conn_interval, timeout, latency, bonding)
+    # This is a good place to set the connection interval (sampled below)
+    
+    # Set up a connection interval of 20ms (40*1.25ms)
+    if connected = 0 then
+        call connection_update(connection,15,15,latency,timeout)
+    end if 
+    connected = 1
+end
+
+# Disconnection event listener
+event connection_disconnected(connection, reason)
+    call gap_set_mode(gap_general_discoverable, gap_undirected_connectable)	# Start advertisement
+    connected = 0
+end
+
+event hardware_soft_timer(handle)
+        sensor(0:1)   = sensor(0:1) + 1
+        # Write acceleration and gyro to GATT
+        call attributes_write(xgatt_sensor, 0, 20, sensor(0:20))        
+end

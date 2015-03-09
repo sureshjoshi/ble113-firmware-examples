@@ -1,0 +1,60 @@
+# This will be used for a UART based BLE112-Arduino Commication test
+
+
+# Boot event listener
+event system_boot(major ,minor ,patch ,build ,ll_version ,protocol_version ,hw)
+
+      #Set timer to generate event every 1s
+      #call hardware_set_soft_timer(32768, 1, 0)
+
+      # configure P0.7 as output
+      call hardware_io_port_config_direction(0, $80)
+
+      # Disable P0.7 pin. Parameters: I/O port to write to 0/1/2, 
+      #                               bitmask of pins to modify, 
+      #                               bitmask of pin values to set
+      call hardware_io_port_write(0, $80, 0)
+	  
+	  call gap_set_mode(gap_general_discoverable, gap_undirected_connectable)	# Start advertisement
+	  call sm_set_bondable_mode(1)
+	  
+	  call system_endpoint_set_watermarks(system_endpoint_uart1, 12, 0)	  
+end
+
+# Connection event listener
+event connection_status(connection, flags, address, address_type, conn_interval, timeout, latency, bonding)
+end
+
+# Disconnection event listener
+event connection_disconnected(connection, reason)
+    call gap_set_mode(gap_general_discoverable, gap_undirected_connectable)	# Start advertisement
+end
+
+# endpoint data in
+dim in(12) 
+dim in_len
+dim result
+dim port
+dim data
+
+# System endpoint watermark event listener
+# Generated when there is data available from UART
+event system_endpoint_watermark_rx(endpoint, size)
+   call hardware_io_port_read(0, $80)(result, port, data)
+
+   if data & $80 then
+      call hardware_io_port_write(0, $80, 0)
+   else
+      call hardware_io_port_write(0, $80, $80)
+   end if	
+
+   if endpoint = system_endpoint_uart1 then
+        in_len = size
+
+        call system_endpoint_set_watermarks(system_endpoint_uart1, 0, $ff) 						# disable RX watermark
+        call system_endpoint_rx(system_endpoint_uart1, in_len)(result, in_len, in(0:in_len))	# read data from UART
+		call system_endpoint_set_watermarks(system_endpoint_uart1, 12, $ff) 						# enable RX watermark
+        call attributes_write(xgatt_sensor, 0, in_len, in(0:in_len))								# Write data to GATT
+    end if
+end
+

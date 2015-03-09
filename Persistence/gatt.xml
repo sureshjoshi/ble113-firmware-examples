@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration>
+
+    <service uuid="1800">
+      <description>Generic Access Profile</description>
+
+      <characteristic uuid="2a00">
+        <properties read="true" const="true" />
+        <value>Persistence Example</value>
+      </characteristic>
+
+      <characteristic uuid="2a01">
+        <properties read="true" const="true" />
+        <value type="hex">0000</value>
+      </characteristic>
+    </service>
+        
+	<service uuid="1d141234-fd63-4fa1-bfa4-8f47b42119f0">
+	    <description>Persistence Service</description>
+		<characteristic uuid="f7bf1111-fb6d-4e53-88a4-5e37e0326063" id="xread">
+		    <properties read="true" />
+			<value length="2" />
+		</characteristic>
+		<characteristic uuid="98422222-34fc-4045-a5d0-2c581f81a153" id="xwrite">
+		    <properties write="true" />
+			<value length="2" />
+		</characteristic>
+	</service>
+</configuration>

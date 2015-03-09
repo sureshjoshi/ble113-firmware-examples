@@ -1,0 +1,117 @@
+# This is the BGScript for communication to/from the MPU6050 using the BLE112 I2C interface (pin 8-SDA, pin 7 - SCL)  
+
+# API:
+# call hardware_i2c_write(address,stop,data_len, data_data)(written)
+# call hardware_i2c_read(address,stop,length)(result,data_len,data_data)
+# call attributes_write(handle, offset, value_len, value_data)(result)
+
+dim written
+dim result
+dim port
+dim data
+dim data_len
+dim connected
+
+# Boot event listener
+event system_boot(major ,minor ,patch ,build ,ll_version ,protocol_version ,hw)
+
+      #Set timer to generate event every 50ms (32768/1000ms * 50ms) (needs to be roughly less than connection interval time)
+      call hardware_set_soft_timer(1634, 1, 0)
+      
+	  # This should be the timer for 1s
+	  # call hardware_set_soft_timer(32768, 1, 0)
+
+      # Initialize as 'disconnected'  
+      connected = 0
+	  
+	  call gap_set_mode(gap_general_discoverable, gap_undirected_connectable)	# Start advertisement
+	  call sm_set_bondable_mode(1)
+
+	  # Read WHO_AM_I register (0x75) of device at address (default address of MPU6050 is 0x68, which is then left shifted once to make 0xD0/208)
+	  call hardware_i2c_write(208,0,1,"\x75")(written)
+	  call hardware_i2c_read(208,1,1)(result,data_len,data)
+	  call attributes_write(xgatt_who, 0, 1, data)
+  
+ 	  
+	  # Set power management register (0x6B) to use gyro clock (0x01)
+		#setClockSource(MPU6050_CLOCK_PLL_XGYRO);
+		#I2Cdev::writeBits(devAddr, MPU6050_RA_PWR_MGMT_1, MPU6050_PWR1_CLKSEL_BIT, MPU6050_PWR1_CLKSEL_LENGTH, source);
+		#setSleepEnabled(false);
+		#I2Cdev::writeBit(devAddr, MPU6050_RA_PWR_MGMT_1, MPU6050_PWR1_SLEEP_BIT, enabled);
+	  call hardware_i2c_write(208,1,2,"\x6b\x01")(written)
+	
+      # Set configuration register (0x1A) filter at 90Hz (0x02)
+	  call hardware_i2c_write(208,1,2,"\x1a\x02")(written)
+    
+	  # Set gyro configuration register (0x1B) to all zeros (0x00)
+		#setFullScaleGyroRange(MPU6050_GYRO_FS_250);
+		#I2Cdev::writeBits(devAddr, MPU6050_RA_GYRO_CONFIG, MPU6050_GCONFIG_FS_SEL_BIT, MPU6050_GCONFIG_FS_SEL_LENGTH, range);
+	  call hardware_i2c_write(208,1,2,"\x1b\x00")(written)
+
+	  # Set accelerometer configuration register (0x1C) to all zeros (0x00)
+		#setFullScaleAccelRange(MPU6050_ACCEL_FS_2);
+		#I2Cdev::writeBits(devAddr, MPU6050_RA_ACCEL_CONFIG, MPU6050_ACONFIG_AFS_SEL_BIT, MPU6050_ACONFIG_AFS_SEL_LENGTH, range);
+	  call hardware_i2c_write(208,1,2,"\x1c\x00")(written)
+end
+
+# Connection event listener
+event connection_status(connection, flags, address, address_type, conn_interval, timeout, latency, bonding)
+    # Set up a connection interval of 50ms (40*1.25ms)
+    if connected = 0 then
+        call connection_update(connection,40,40,latency,timeout)
+    end if 
+    connected = 1
+end
+
+# Disconnection event listener
+event connection_disconnected(connection, reason)
+    call gap_set_mode(gap_general_discoverable, gap_undirected_connectable)	# Start advertisement
+    connected = 0
+end
+
+# Buffer to hold the 6 bytes of acceleration data, 6 bytes of gyro data
+dim sensor(12)
+
+#Timer event listener
+event hardware_soft_timer(handle)
+	# Read the acceleration X, Y, Z (high, then low bytes) registers and write to the GATT
+	# Read gyro X,Y,Z (high, then low bytes) registers and write to GATT
+	call hardware_i2c_write(208,0,1,"\x3b")(written)
+	call hardware_i2c_read(208,0,1)(result,data_len,sensor(0))
+
+	call hardware_i2c_write(208,0,1,"\x3c")(written)
+	call hardware_i2c_read(208,0,1)(result,data_len,sensor(1))
+	
+	call hardware_i2c_write(208,0,1,"\x3d")(written)
+	call hardware_i2c_read(208,0,1)(result,data_len,sensor(2))
+
+	call hardware_i2c_write(208,0,1,"\x3e")(written)
+	call hardware_i2c_read(208,0,1)(result,data_len,sensor(3))
+
+	call hardware_i2c_write(208,0,1,"\x3f")(written)
+	call hardware_i2c_read(208,0,1)(result,data_len,sensor(4))
+
+	call hardware_i2c_write(208,0,1,"\x40")(written)
+	call hardware_i2c_read(208,0,1)(result,data_len,sensor(5))
+
+	call hardware_i2c_write(208,0,1,"\x43")(written)
+	call hardware_i2c_read(208,0,1)(result,data_len,sensor(6))
+
+	call hardware_i2c_write(208,0,1,"\x44")(written)
+	call hardware_i2c_read(208,0,1)(result,data_len,sensor(7))
+	
+	call hardware_i2c_write(208,0,1,"\x45")(written)
+	call hardware_i2c_read(208,0,1)(result,data_len,sensor(8))
+
+	call hardware_i2c_write(208,0,1,"\x46")(written)
+	call hardware_i2c_read(208,0,1)(result,data_len,sensor(9))
+
+	call hardware_i2c_write(208,0,1,"\x47")(written)
+	call hardware_i2c_read(208,0,1)(result,data_len,sensor(10))
+
+	call hardware_i2c_write(208,0,1,"\x48")(written)
+	call hardware_i2c_read(208,1,1)(result,data_len,sensor(11))
+	
+	# Write acceleration and gyro to GATT
+	call attributes_write(xgatt_sensor, 0, 12, sensor(0:12))	
+end

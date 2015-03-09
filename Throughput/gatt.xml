@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration>
+	<service uuid="1800">
+		<description>Generic Access Profile</description>
+
+    	<characteristic uuid="2a00">
+			<properties read="true" const="true" />
+			<value type="utf-8">Sample1</value>
+		</characteristic>
+
+		<characteristic uuid="2a01">
+			<properties read="true" const="true" />
+			<value type="hex">4142</value>
+		</characteristic>
+	</service>
+
+    <service uuid="aaa51666-e7cb-469b-8e4d-2742f1ba7aaa" advertise="true">
+        <description>Write Buffer</description>
+
+        <characteristic uuid="bbbdd780-b042-4876-aae1-112855353bbb" id="xgatt_write">
+            <description>Written Data</description>
+            <properties write="true" />
+            <value variable_length="true" length="20" />
+        </characteristic>	
+
+		<characteristic uuid="acce1000-0000-0000-0000-1234567890ab" id="xgatt_sensor">
+            <description>Sensor</description>
+            <properties read="true" notify="true" />
+            <value length="20" />
+        </characteristic>		
+    </service>
+	
+</configuration>

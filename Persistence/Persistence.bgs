@@ -1,0 +1,65 @@
+dim port
+dim led_value
+dim read_result
+dim data(2)
+dim len
+
+dim connected 
+
+event system_boot(major, minor, patch, build, ll_version, protocol_version, hw)
+    # Set device to advertisement mode and allow undirected connections
+    call gap_set_mode(gap_general_discoverable, gap_undirected_connectable)
+
+    led_value = 0
+    # configure P0.0 as output
+    call hardware_io_port_config_direction(0, $01)
+ 
+    #Set timer to generate event every 1s
+    call hardware_set_soft_timer(32760, 1, 0)
+    len = 2
+    #Initialize a GATT value from a PS key, which is 2 bytes long
+    call flash_ps_load($8000)(read_result, len, data(0:2))
+    # Write the PS value to handle with ID "xgatt_PS_value"
+    call attributes_write(xread, 0, 2, data(0:2))
+    
+    connected = 0
+end
+
+
+#Timer event listener toggles LED at a certain rate
+event hardware_soft_timer(handle)
+  call hardware_io_port_read(0, $01)(read_result, port, led_value)
+
+  if (led_value & $01) then
+    call hardware_io_port_write(0, $01, $00)
+  else
+    call hardware_io_port_write(0, $01, $01)
+  end if
+end
+
+
+# Incoming data event listener
+event attributes_value(connection, reason, handle, offset, value_len, value_data)
+    # Check if handle value 1 is written
+     if handle = xwrite then
+        # Write attribute value to PS-store
+        call flash_ps_save($8000, 2, value_data(0:2))
+     end if
+end
+
+
+event connection_status(connection, flags, address, address_type, conn_interval, timeout, latency, bonding)
+    if connected = 0 then
+        # Set up a connection interval of between 6*1.25ms to 10*1.25ms (7.5-12.5ms)
+        # Android (and iOS?) respond to connection interval updates, but cannot set them
+        call connection_update(connection, 6, 10, latency, timeout)
+    end if
+    connected = 1
+end
+
+# Disconnection event listener
+event connection_disconnected(handle, result)
+    connected = 0
+    # Makes the device visible and connectable
+    call gap_set_mode(gap_general_discoverable, gap_undirected_connectable)
+end

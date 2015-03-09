@@ -1,0 +1,121 @@
+
+dim port
+dim led_value
+dim read_result
+
+dim button_pressed_time
+dim button_value
+
+dim timer_period_1000ms
+dim timer_period_100ms
+
+dim connected # 0 == Disconnected, 1 == Connected, 2 == Forced disconnection from BLE113
+dim encryption # 0 == Don't Encrypt, 1 == Encrypted, 2 == Want to Encrypt
+
+event system_boot(major, minor, patch, build, ll_version, protocol_version, hw)
+
+    # Don't set device to advertisement mode until the button has been held down for 10 seconds
+    # call gap_set_mode(gap_general_discoverable, gap_undirected_connectable)
+    
+    # enable bondable mode
+    call sm_set_bondable_mode(1)
+
+    encryption = 0
+    button_pressed_time = 0
+    led_value = 0
+    timer_period_1000ms = 32760
+    timer_period_100ms = 3276
+    # configure P0.0 as output, others as input
+    call hardware_io_port_config_direction(0, $01)
+ 
+    #Set timer to generate event every 1s
+    call hardware_set_soft_timer(timer_period_1000ms, 1, 0)
+    
+    connected = 0
+end
+
+
+#Timer event listener toggles LED at a certain rate
+event hardware_soft_timer(handle)
+  call hardware_io_port_read(0, $01)(read_result, port, led_value)
+
+  if (led_value & $01) then
+    call hardware_io_port_write(0, $01, $00)
+  else
+    call hardware_io_port_write(0, $01, $01)
+  end if
+  
+  call hardware_io_port_read(0, $04)(read_result, port, button_value)
+  if button_value = 0 then
+    button_pressed_time = button_pressed_time + 1
+  else
+    button_pressed_time = 0
+  end if
+  
+  # If holding longer than 5 seconds, encrypt 
+  if button_pressed_time > 5 then
+    # call hardware_set_soft_timer(timer_period_100ms, 1, 0)    
+    if connected = 1 then
+
+    end if ##if connected = 0
+  end if ##if button_pressed_time > 10
+
+ 
+  # If holding longer than 10 seconds, disconnect 
+  if button_pressed_time > 10 then
+    encryption = 2
+    # call hardware_set_soft_timer(timer_period_100ms, 1, 0)    
+    if connected = 0 then
+      call gap_set_mode(gap_general_discoverable, gap_undirected_connectable)
+    else
+      # If we're currently connected, force disconnect and re-advertise in disconnection listener
+      connected = 2
+      call connection_disconnect(0)
+    end if ##if connected = 0
+  end if ##if button_pressed_time > 10
+end
+
+
+# Incoming data event listener
+# Handles OTA Control Point Attribute (commands) and OTA Data Attribute (firmware update) writes
+# and performs the necessary actions
+event attributes_value(connection, reason, handle, offset, value_len, value_data)
+end
+
+
+event connection_status(connection, flags, address, address_type, conn_interval, timeout, latency, bonding)
+    if connected = 0 then
+        # Set up a connection interval of between 6*1.25ms to 10*1.25ms (7.5-12.5ms)
+        # Android (and iOS?) respond to connection interval updates, but cannot set them
+        call connection_update(connection, 6, 10, latency, timeout)
+    end if
+    connected = 1
+    
+    if encryption = 2 then
+        call sm_encrypt_start(connection, 1)
+    end if
+end
+
+# Disconnection event listener
+event connection_disconnected(handle, result)
+    if connected = 2 
+      call gap_set_mode(gap_general_discoverable, gap_undirected_connectable)
+    end if
+    connected = 0
+end
+
+
+    # if bonding fails, handle it gracefully based on the following possible results:
+    # - 0x018B - Out of bonds (no space left, all 8 bonding slots taken)
+    # - 0x0205 - Authentication failure (shouldn't happen with "just works" mode, but might otherwise)
+    # - 0x0206 - Pin or key missing (probably local or remote device is missing the key, but not both)
+    # - 0x0301 - Passkey entry failed (also shouldn't happen in "just works" mode unless bonding is cancelled)
+    # - 0x0302 - OOB data not available (only occurs if OOB is required and not supported on both ends)
+    # - 0x0303 - Authentication requirements (I/O capabilities required but not supported)
+    # - 0x0304 - Confirm value failed (PIN entry/comparison attempted but failed)
+    # - 0x0305 - Pairing not supported (also occurs if bond info removed from remote device but not local module)
+    # - 0x0306 - Encryption key size (key size insufficient to meet security requirements)
+    # - 0x0307 - Command not supported (SMP command is not supported on this device)
+    # - 0x0308 - Unspecified reason (may occur if bond info is present remotely but not locally)
+    # - 0x0309 - Repeated attempts (too little time has elapsed since last pairing/security request)
+    # - 0x030A - Invalid parameters (bad parameters sent during pairing/bonding process)

@@ -2,8 +2,11 @@
 A small collection of examples for the BLE112/BLE113 in BGScript
 
 These expand on posts written here:
+
 http://www.sureshjoshi.com/embedded/ble112-communicating-with-mpu6050/
+
 http://www.sureshjoshi.com/embedded/ble112-uart-watermarks-example/
+
 http://www.sureshjoshi.com/embedded/ble112-how-to-use-i2c/
 
 

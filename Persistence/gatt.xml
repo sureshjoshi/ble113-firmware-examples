@@ -98,4 +98,18 @@
         </characteristic>
     </service>
     
+    <service uuid="1d141234-fd63-4fa1-bfa4-8f47b42119f0">
+        <description>Persistence Service</description>
+
+        <characteristic uuid="f7bf1111-fb6d-4e53-88a4-5e37e0326063" id="xgatt_read">
+            <properties read="true" />
+            <value length="2" />
+        </characteristic>
+    
+        <characteristic uuid="98422222-34fc-4045-a5d0-2c581f81a153" id="xgatt_write">
+            <properties write="true" />
+            <value length="2" />
+        </characteristic>
+    </service>
+    
 </configuration>

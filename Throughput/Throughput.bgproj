@@ -2,12 +2,12 @@
 <project>
     <gatt in="gatt.xml" />
     <hardware in="hardware.xml" />    
-    <script in="Persistence.bgs" />
+    <script in="Throughput.bgs" />
     <config in="config.xml" />
     <device type="ble113-m256k" />
 	<boot fw="bootota" />
-   	<image out="Persistence.hex" />    
-    <ota out="Persistence.ota" firmware="false" />
+   	<image out="Throughput.hex" />    
+    <ota out="Throughput.ota" firmware="false" />
     <!-- firmware=false only updates the BGScript and GATT, =true updates the BT Stack and BGAPI, but is MUCH bigger -->
-	<!-- <ota out="Persistence.ota" firmware="true" /> -->
+	<!-- <ota out="Throughput.ota" firmware="true" /> -->
 </project>

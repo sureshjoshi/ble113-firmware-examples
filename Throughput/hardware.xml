@@ -7,4 +7,5 @@
 	<usb enable="false" endpoint="api" />
     <txpower power="15" bias="5" />
     <script enable="true" />
+    <otaboot source="internal" />
 </hardware>

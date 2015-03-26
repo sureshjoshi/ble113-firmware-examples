@@ -3,11 +3,21 @@ A small collection of examples for the BLE112/BLE113 in BGScript
 
 These expand on posts written here:
 
+http://www.sureshjoshi.com/embedded/ble113-ota-over-the-air-programming/
+
+http://www.sureshjoshi.com/embedded/bgscript-bglib-bgapi-explained/
+
 http://www.sureshjoshi.com/embedded/ble112-communicating-with-mpu6050/
 
 http://www.sureshjoshi.com/embedded/ble112-uart-watermarks-example/
 
 http://www.sureshjoshi.com/embedded/ble112-how-to-use-i2c/
+
+If you're looking for over-the-air programming, there are also two repositories that contain sample iOS and Android OTA apps.
+
+https://github.com/RobotPajamas/ble113-ota-ios
+
+https://github.com/RobotPajamas/ble113-ota-android
 
 
 License

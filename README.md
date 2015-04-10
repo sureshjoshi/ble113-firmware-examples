@@ -3,6 +3,8 @@ A small collection of examples for the BLE112/BLE113 in BGScript
 
 These expand on posts written here:
 
+http://www.sureshjoshi.com/embedded/bgscript-random-number-generator/
+
 http://www.sureshjoshi.com/embedded/ble113-ota-over-the-air-programming/
 
 http://www.sureshjoshi.com/embedded/bgscript-bglib-bgapi-explained/

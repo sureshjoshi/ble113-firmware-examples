@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration>
+
+    <service uuid="1800">
+        <description>Generic Access Profile</description>
+
+        <characteristic uuid="2a00">
+            <properties read="true" const="true" />
+            <value>RPJ Random</value>
+        </characteristic>
+
+        <characteristic uuid="2a01">
+            <properties read="true" const="true" />
+            <value type="hex">0000</value>
+        </characteristic>
+    </service>
+    
+    <service type="primary" uuid="180A" id="manufacturer">
+        <description>Device Information</description>
+
+        <characteristic uuid="2A29">
+            <description>Manufacturer Name String</description>
+            <properties read="true" const="true" />
+            <value>Robot Pajamas</value>
+        </characteristic>
+
+        <characteristic uuid="2A24">
+            <description>Model Number String</description>
+            <properties read="true" const="true" />
+            <value>RPJ-1</value>
+        </characteristic>
+        
+        <characteristic uuid="2A25" id="xgatt_serial_number">
+            <description>Serial Number String</description>
+            <properties read="true" />
+            <value length="17" />
+        </characteristic>
+
+        <characteristic uuid="2A27">
+            <description>Hardware Revision String</description>
+            <properties read="true" const="true" />
+            <value>RPJ-1</value>
+        </characteristic>
+
+        <characteristic uuid="2A26">
+            <description>Firmware Revision String</description>
+            <properties read="true" const="true" />
+            <value>0.1.0</value>
+        </characteristic>
+
+        <characteristic uuid="2A28">
+            <description>Software Revision String</description>
+            <properties read="true" const="true" />
+            <value>0.1.0</value>
+        </characteristic>
+    </service>
+        
+        
+    <service uuid="1d14d6ee-fd63-4fa1-bfa4-8f47b42119f0">
+        <description>OTA Service</description>
+        
+        <!-- Standard OTA endpoints for BLEGUI to work -->
+        <characteristic uuid="f7bf3564-fb6d-4e53-88a4-5e37e0326063" id="ota_control">
+            <properties write="true" />
+            <value length="1" type="user" />
+        </characteristic>
+        <characteristic uuid="984227f3-34fc-4045-a5d0-2c581f81a153" id="ota_data">
+            <properties write_no_response="true" />
+            <value length="20" />
+        </characteristic>
+
+        <!-- More robust OTA endpoints for Android and iOS (BLEGUI won't work with these) -->
+        <characteristic uuid="00737572-6573-686a-6f73-68692e636f6d" id="ota_data_w_response">
+            <properties write="true" />
+            <value length="20" />
+        </characteristic>       
+            <characteristic uuid="01737572-6573-686a-6f73-68692e636f6d" id="ota_control_wo_response">
+            <properties write_no_response="true" />
+            <value length="1" type="user" />
+        </characteristic>
+
+    </service>
+    
+    <service uuid="00766963-6172-6173-6f6c-7574696f6e73">
+        <description>Device Control</description>
+        <characteristic uuid="01766963-6172-6173-6f6c-7574696f6e73" id="device_reset">
+            <description>Device reset</description>
+            <properties write_no_response="true" />
+            <value length="1" />
+        </characteristic>
+    </service>
+    
+    <service uuid="DEADBEEF-CDCD-CDCD-CDCD-CDCDCDCDCDCD">
+        <description>Debug service</description>
+        <characteristic uuid="DEADBEEF-0000-0000-0000-000000000000" id="xgatt_debug">
+            <description>Debug output</description>
+            <properties read="true" notify="true" />
+            <value length="20" />
+        </characteristic>
+    </service>
+    
+</configuration>

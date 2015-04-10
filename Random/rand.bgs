@@ -1,0 +1,27 @@
+# Exported variable with the latest random number
+export dim rand_number
+
+# Variables for xorshift-ing
+dim t
+dim x
+dim y
+dim z
+
+export procedure initialize_rand(seed)
+    # Use the passed in seed value to initialize the pseudo-random number generator (all variables cannot be zero)
+    # Note: The use of 42 below doesn't really increase the randomness, I just like Hitchhiker's Guide
+    # Also, having an addition or subtraction ensures that passing 0 into the seed doesn't break the generator
+    x = seed 
+    y = seed + 42
+    z = seed - 42
+    rand_number = seed * 42
+end
+
+# Perform a xorshift (https://en.wikipedia.org/wiki/Xorshift) to generate a pseudo-random number
+export procedure rand()
+    t = x ^ (x << 11)
+    x = y
+    y = z 
+    z = rand_number
+    rand_number = rand_number ^ (rand_number >> 19) ^ t ^ (t >> 8)
+end

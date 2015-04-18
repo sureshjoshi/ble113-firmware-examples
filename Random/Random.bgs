@@ -13,7 +13,7 @@ dim tmp(20)
 dim mac_addr(6)
 dim seed
 
-const TICKS_PER_SECOND = 1000
+const TICKS_PER_SECOND = 32678
 const TIMER_SECONDS = 1
 const MAIN_TIMER_HANDLE = 0
 
@@ -92,7 +92,7 @@ event system_boot(major, minor, patch, build, ll_version, protocol_version, hw)
     # Set device to advertisement mode and allow undirected connections
     call gap_set_mode(gap_general_discoverable, gap_undirected_connectable)
     
-        #Get local BT address
+    #Get local BT address
     call system_address_get()(mac_addr(0:6))
 
     # Set the Serial Number and device name

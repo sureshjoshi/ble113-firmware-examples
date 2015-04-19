@@ -88,6 +88,11 @@
             <properties write_no_response="true" />
             <value length="1" />
         </characteristic>
+        <characteristic uuid="02766963-6172-6173-6f6c-7574696f6e73" id="pwm_control">
+            <description>PWM control</description>
+            <properties write_no_response="true" />
+            <value length="1" />
+        </characteristic>
     </service>
     
     <service uuid="DEADBEEF-CDCD-CDCD-CDCD-CDCDCDCDCDCD">

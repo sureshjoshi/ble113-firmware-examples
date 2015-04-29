@@ -159,6 +159,27 @@ event hardware_soft_timer(handle)
     call rand()
     tmp(0:4) = rand_number
     call attributes_write(xgatt_debug, 0, 4, tmp(0:4))
+    
+    # Generate a random number, put it into a bucket based on probability, and return it to the debugging output
+    # call rand()
+    # if rand_number <= 536870912 then  # 25% of the time
+        # read_result = 1
+    # end if
+            
+    # if rand_number > 536870912 && rand_number <= 1073741824 then  # 25% of the time
+        # read_result = 2
+    # end if
+
+    # if rand_number > 1073741824 && rand_number <= 1825361100 then  # 35% of the time
+        # read_result = 3
+    # end if
+
+    # if rand_number > 1825361100 then  # 15% of the time
+        # read_result = 4
+    # end if
+
+    # tmp(0:4) = read_result
+    # call attributes_write(xgatt_debug, 0, 4, tmp(0:4))
 end
 
 

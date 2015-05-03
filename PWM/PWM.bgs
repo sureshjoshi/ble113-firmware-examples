@@ -16,6 +16,14 @@ const TICKS_PER_SECOND = 32678
 const TIMER_SECONDS = 5
 const MAIN_TIMER_HANDLE = 0
 
+const PWM_PORT = 1
+const PWM_PIN = $01  # P1_0
+const PWM_BASE_CHANNEL = 0
+const PWM_CHANNEL = 2
+const PWM_TIMER = 1
+const PWM_BASE_DIVIDER = 100  # (32,000,000 Hz / 100 = 320 kHz)
+
+
 # Handles OTA Control Point Attribute (commands) and OTA Data Attribute (firmware update) writes
 # and performs the necessary actions
 procedure handle_ota_control(connection, offset, value_len, value_data())
@@ -83,13 +91,13 @@ event attributes_value(connection, reason, handle, offset, value_len, value_data
         
         if command = 0 then
             # Turn off the PWMs by writing zero to the mode and frequency
-            call hardware_timer_comparator(1, 0, 6, 0)    
-            call hardware_timer_comparator(1, 2, 6, 0)
+            call hardware_timer_comparator(PWM_TIMER, PWM_BASE_CHANNEL, 6, 0)    
+            call hardware_timer_comparator(PWM_TIMER, PWM_CHANNEL, 6, 0)
         else 
             # channel 0 establishes the baseline frequency (32,000,000 Hz / 100 = 320 kHz)
-            call hardware_timer_comparator(1, 0, 6, 100)
+            call hardware_timer_comparator(PWM_TIMER, PWM_BASE_CHANNEL, 6, PWM_BASE_DIVIDER)
             # Set the duty-cycle to whatever the attribute input was (between 0-100)
-            call hardware_timer_comparator(1, 2, 6, command)
+            call hardware_timer_comparator(PWM_TIMER, PWM_CHANNEL, 6, command)
         end if
     end if
 end
@@ -146,9 +154,9 @@ event system_boot(major, minor, patch, build, ll_version, protocol_version, hw)
     connected = 0
     
     # channel 0 establishes the baseline frequency (32,000,000 Hz / 100 = 320 kHz)
-    call hardware_timer_comparator(1, 0, 6, 100)
+    call hardware_timer_comparator(PWM_TIMER, PWM_BASE_CHANNEL, 6, PWM_BASE_DIVIDER)
     # Generate a 50% duty-cycle by using half of the frequency divider (50 / 100 = 0.5)
-    call hardware_timer_comparator(1, 2, 6, 50)
+    call hardware_timer_comparator(PWM_TIMER, PWM_CHANNEL, 6, PWM_BASE_DIVIDER/2)
 end
 
 

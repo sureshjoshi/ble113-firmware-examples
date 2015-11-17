@@ -1,6 +1,4 @@
 
-
-
 # OTA Variables
 dim command
 dim dfu_pointer  # current pointer to flash location to upload firmware
@@ -12,6 +10,54 @@ dim led_value
 dim read_result
 
 dim connected 
+
+# Constants
+const TIMER_SECONDS = 1
+const TICKS_PER_SECOND = 32768
+
+const LED_PIN = $01  # P0_0
+const LED_PORT = 0
+
+const MAIN_TIMER_HANDLE = 0
+
+
+# System Boot event listener
+event system_boot(major, minor, patch, build, ll_version, protocol_version, hw)
+    # Erase internal flash dedicated for OTA
+    # For this to work, the script timeout has to be increased from the default
+    # value in application configuration file (config.xml)
+    erase_page = 0
+    while erase_page < MAX_ERASE_PAGE
+        call flash_erase_page(erase_page)
+        erase_page = erase_page + 1
+    end while
+
+    # Set device to advertisement mode and allow undirected connections
+    call gap_set_mode(gap_general_discoverable, gap_undirected_connectable)
+
+    # Configure P0.0 as output
+    call hardware_io_port_config_direction(0, $01)
+ 
+    # Set timer to generate event every 1s (0 is repeating, 1 is single-shot for final parameter)
+    call hardware_set_soft_timer(TIMER_SECONDS * TICKS_PER_SECOND, MAIN_TIMER_HANDLE, 0)
+
+    dfu_pointer = 0
+    led_value = 0    
+    connected = 0
+end
+
+
+# Timer event listener toggles LED at a certain rate
+event hardware_soft_timer(handle)
+  call hardware_io_port_read(0, $01)(read_result, port, led_value)
+
+  if (led_value & LED_PIN) then
+    call hardware_io_port_write(LED_PORT, LED_PIN, 0)
+  else
+    call hardware_io_port_write(LED_PORT, LED_PIN, LED_PIN)
+  end if
+end
+
 
 # Handles OTA Control Point Attribute (commands) and OTA Data Attribute (firmware update) writes
 # and performs the necessary actions
@@ -51,7 +97,7 @@ end
 # Incoming data event listener
 event attributes_value(connection, reason, handle, offset, value_len, value_data)
     
-    if (handle = device_reset) then
+    if (handle = xgatt_device_reset) then
         command=value_data(0:1)
         # Command 1 received, reset device
         if command=1 then  
@@ -59,59 +105,21 @@ event attributes_value(connection, reason, handle, offset, value_len, value_data
         end if
     end if
     
-	# Both ota_control endpoints run the same code, however, the wo_response just ignores most of this
-    if handle = ota_control || handle = ota_control_wo_response then
+    # Both ota_control endpoints run the same code, however, the wo_response just ignores most of this
+    if handle = xgatt_ota_control || handle = xgatt_ota_control_wo_response then
         call handle_ota_control(connection, offset, value_len, value_data(0:value_len))
     end if
 
     # Check if OTA data attribute is written which carries the firmware update
     # and store the data to the internal flash
-    if handle = ota_data || handle = ota_data_w_response then
+    if handle = xgatt_ota_data || handle = xgatt_ota_data_w_response then
         call flash_write_data(dfu_pointer, value_len, value_data(0:value_len))
         dfu_pointer = dfu_pointer + value_len
     end if
 end
 
 
-event system_boot(major, minor, patch, build, ll_version, protocol_version, hw)
-    # Erase internal flash dedicated for OTA
-    # For this to work, the script timeout has to be increased from the default
-    # value in application configuration file (config.xml)
-    erase_page = 0
-    while erase_page < MAX_ERASE_PAGE
-        call flash_erase_page(erase_page)
-        erase_page = erase_page + 1
-    end while
-
-    # Set device to advertisement mode and allow undirected connections
-    call gap_set_mode(gap_general_discoverable, gap_undirected_connectable)
-
-    # Initialize the DFU pointer
-    dfu_pointer = 0
- 
-    led_value = 0
-    # configure P0.0 as output
-    call hardware_io_port_config_direction(0, $01)
- 
-    #Set timer to generate event every 1s
-    call hardware_set_soft_timer(32760, 1, 0)
-    
-    connected = 0
-end
-
-
-#Timer event listener toggles LED at a certain rate
-event hardware_soft_timer(handle)
-  call hardware_io_port_read(0, $01)(read_result, port, led_value)
-
-  if (led_value & $01) then
-    call hardware_io_port_write(0, $01, $00)
-  else
-    call hardware_io_port_write(0, $01, $01)
-  end if
-end
-
-
+# Connection event listener
 event connection_status(connection, flags, address, address_type, conn_interval, timeout, latency, bonding)
     if connected = 0 then
         # Set up a connection interval of between 6*1.25ms to 10*1.25ms (7.5-12.5ms)
@@ -120,6 +128,7 @@ event connection_status(connection, flags, address, address_type, conn_interval,
     end if
     connected = 1
 end
+
 
 # Disconnection event listener
 event connection_disconnected(handle, result)

@@ -55,6 +55,30 @@
         </characteristic>
     </service>
         
+    <service uuid="1d14d6ee-fd63-4fa1-bfa4-8f47b42119f0">
+        <description>OTA Service</description>
+        
+        <!-- Standard OTA endpoints for BLEGUI to work -->
+        <characteristic uuid="f7bf3564-fb6d-4e53-88a4-5e37e0326063" id="xgatt_ota_control">
+            <properties write="true" />
+            <value length="1" type="user" />
+        </characteristic>
+        <characteristic uuid="984227f3-34fc-4045-a5d0-2c581f81a153" id="xgatt_ota_data">
+            <properties write_no_response="true" />
+            <value length="20" />
+        </characteristic>
+
+        <!-- More robust OTA endpoints for Android and iOS (BLEGUI won't work with these) -->
+        <characteristic uuid="00737572-6573-686a-6f73-68692e636f6d" id="xgatt_ota_data_w_response">
+            <properties write="true" />
+            <value length="20" />
+        </characteristic>       
+            <characteristic uuid="01737572-6573-686a-6f73-68692e636f6d" id="xgatt_ota_control_wo_response">
+            <properties write_no_response="true" />
+            <value length="1" type="user" />
+        </characteristic>
+
+    </service>
     
     <service uuid="DEADBEEF-CDCD-CDCD-CDCD-CDCDCDCDCDCD">
         <description>Debug service</description>

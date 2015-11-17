@@ -21,10 +21,8 @@ import "rand.bgs"
 
 # System boot event listener
 event system_boot(major, minor, patch, build, ll_version, protocol_version, hw)
-    # Set device to advertisement mode and allow undirected connections
-    call gap_set_mode(gap_general_discoverable, gap_undirected_connectable)
     
-    #Get local BT address
+    # Get local BT address
     call system_address_get()(mac_addr(0:6))
 
     # Set the Serial Number and device name
@@ -48,6 +46,9 @@ event system_boot(major, minor, patch, build, ll_version, protocol_version, hw)
 
     # Write 12-byte serial+MAC value to "Serial Number" characteristic
     call attributes_write(xgatt_serial_number, 0, 17, tmp(0:17))
+
+    # Set device to advertisement mode and allow undirected connections
+    call gap_set_mode(gap_general_discoverable, gap_undirected_connectable)
 
     # Initialize variables
     connected = 0

@@ -30,11 +30,10 @@
             <value>RPJ-1</value>
         </characteristic>
         
-        <!-- This needs to be populated in the .bgs ideally-->
         <characteristic uuid="2A25" id="xgatt_serial_number">
             <description>Serial Number String</description>
             <properties read="true" />
-            <value>00:00:00:00:00:00</value>
+            <value length="17" />
         </characteristic>
 
         <characteristic uuid="2A27">

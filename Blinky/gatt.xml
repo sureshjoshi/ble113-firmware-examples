@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration>
+
+    <service uuid="1800">
+        <description>Generic Access Profile</description>
+
+        <characteristic uuid="2a00">
+            <properties read="true" const="true" />
+            <value>RPJ Blinky</value>
+        </characteristic>
+
+        <characteristic uuid="2a01">
+            <properties read="true" const="true" />
+            <value type="hex">0000</value>
+        </characteristic>
+    </service>
+    
+    <service type="primary" uuid="180A" id="manufacturer">
+        <description>Device Information</description>
+
+        <characteristic uuid="2A29">
+            <description>Manufacturer Name String</description>
+            <properties read="true" const="true" />
+            <value>Robot Pajamas</value>
+        </characteristic>
+
+        <characteristic uuid="2A24">
+            <description>Model Number String</description>
+            <properties read="true" const="true" />
+            <value>RPJ-1</value>
+        </characteristic>
+        
+        <!-- This needs to be populated in the .bgs ideally-->
+        <characteristic uuid="2A25" id="xgatt_serial_number">
+            <description>Serial Number String</description>
+            <properties read="true" />
+            <value>00:00:00:00:00:00</value>
+        </characteristic>
+
+        <characteristic uuid="2A27">
+            <description>Hardware Revision String</description>
+            <properties read="true" const="true" />
+            <value>RPJ-1</value>
+        </characteristic>
+
+        <characteristic uuid="2A26">
+            <description>Firmware Revision String</description>
+            <properties read="true" const="true" />
+            <value>1.0.0</value>
+        </characteristic>
+
+        <characteristic uuid="2A28">
+            <description>Software Revision String</description>
+            <properties read="true" const="true" />
+            <value>1.0.0</value>
+        </characteristic>
+    </service>
+    
+</configuration>

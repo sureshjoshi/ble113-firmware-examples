@@ -57,7 +57,7 @@ end
 
 # Timer event listener toggles LED at a certain rate
 event hardware_soft_timer(handle)
-    call hardware_io_port_read(0, $01)(read_result, port, led_value)
+    call hardware_io_port_read(LED_PORT, LED_PIN)(read_result, port, led_value)
 
     if (led_value & LED_PIN) then
         call hardware_io_port_write(LED_PORT, LED_PIN, 0)

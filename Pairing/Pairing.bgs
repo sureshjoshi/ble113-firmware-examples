@@ -15,10 +15,9 @@ const ENCRYPTION_TIMER_HANDLE = 0
 # Incoming data event listener
 event attributes_value(connection, reason, handle, offset, value_len, value_data)
     
-    if (handle = device_reset) then
-        command=value_data(0:1)
+    if handle = device_reset then
         # Command 1 received, reset device
-        if command=1 then  
+        if value_data(0:1) = 1 then  
             call system_reset(0)
         end if
     end if

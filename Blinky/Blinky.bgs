@@ -3,6 +3,10 @@ dim port
 dim led_value
 dim read_result
 dim connected 
+dim mac_addr(6)
+dim tmp(20)
+dim command
+dim dfu_pointer
 
 # Constants
 const TIMER_SECONDS = 1
